@@ -21,7 +21,7 @@ was treated as a stadalone executable.
 import math
 
 # =============================================================================
-# Calculate PV array size function TODO
+# Calculate PV array size function 
 # =============================================================================
 
 def calc_pv_array_size(building_width, building_length,
@@ -55,9 +55,22 @@ def calc_pv_array_size(building_width, building_length,
         Total power of PV array in kW.
     """
 
-    # TODO: add your code to calculate PV array size from the previous exercise.
+    # calculate the hypotenuse of the roof (convert angle to radians)
+    roof_hypotenuse = (building_width / 2) * (1 / math.cos(math.radians(roof_angle)))
 
-    return # TODO: return the calculated total power
+    # calculate the number of full PV panels that fit along the length of the building in horizontal orientation
+    n_length = math.floor(building_length / (pv_width / 1000))  # convert panel width from mm to m
+
+    # calculate the number of full PV panels that fit the height of the roof in horizontal orientation
+    n_width = math.floor(roof_hypotenuse / (pv_height / 1000))  # convert panel height from mm to m
+
+    # calculate the total number of PV panels that can fit on the roof
+    n_total = n_length * n_width
+
+    # calculate the total power capacity of the PV array in kW
+    total_power = n_total * pv_power / 1000  # convert from W to kW
+
+    return total_power
 
 # =============================================================================
 # Example PV class
@@ -194,22 +207,22 @@ class Storage():
         # 5. Battery power  (discharge = negative, charge = positive)
         if demand_P > 0:
             # Case (a): discharge
-            self.bat_P[t] = ...  # TODO
+            self.bat_P[t] = min(demand_P, self.max_power, (soc_prev - self.min_soc) / self.dt * self.efficiency)
         elif demand_P < 0:
             # Case (b): charge
-            self.bat_P[t] = ...  # TODO
+            self.bat_P[t] = min(-demand_P, self.max_power, (self.max_soc - soc_prev) / (self.efficiency * self.dt))
         else:
             # Case (c): no battery operation
             self.bat_P[t] = 0
     
         # 6. Update SoC (apply efficiency depending on charge/discharge)
         if self.bat_P[t] >= 0:
-            self.soc_E[t] = ...  # TODO charge
+            self.soc_E[t] = soc_prev + (self.bat_P[t] * self.efficiency * self.dt)
         else:
-            self.soc_E[t] = ...  # TODO discharge
-    
-        result_net_P_t = ...  # TODO
-        
+            self.soc_E[t] = soc_prev + (self.bat_P[t] / self.efficiency * self.dt)
+
+        result_net_P_t = demand_P + self.bat_P[t]
+
         
         return result_net_P_t
 
